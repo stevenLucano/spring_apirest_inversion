@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ICustomerService {
     List<Customer> listAll();
-    Customer save(CustomerDto customer);
+    Customer save(CustomerDto customerDto);
     Customer findById(Integer id);
     void delete(Customer customer);
     boolean existsById(Integer id);

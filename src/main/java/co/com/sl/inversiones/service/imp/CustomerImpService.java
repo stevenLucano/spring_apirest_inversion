@@ -6,6 +6,7 @@ import co.com.sl.inversiones.model.entity.Customer;
 import co.com.sl.inversiones.service.ICustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,23 +20,34 @@ public class CustomerImpService implements ICustomerService {
         return (List) customerDao.findAll();
     }
 
+    @Transactional
     @Override
-    public Customer save(CustomerDto customer) {
-        return null;
+    public Customer save(CustomerDto customerDto) {
+        Customer customer = Customer.builder()
+                .customerId(customerDto.getCustomerId())
+                .names(customerDto.getNames())
+                .surnames(customerDto.getSurnames())
+                .age(customerDto.getAge())
+                .availableIncome(customerDto.getInvestorTypeObj().getMonthlyIncome())
+                .investorType(customerDto.getInvestorTypeObj())
+                .build();
+        return customerDao.save(customer);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Customer findById(Integer id) {
-        return null;
+        return customerDao.findById(id).orElse(null);
     }
 
+    @Transactional
     @Override
     public void delete(Customer customer) {
-
+        customerDao.delete(customer);
     }
 
     @Override
     public boolean existsById(Integer id) {
-        return false;
+        return customerDao.existsById(id);
     }
 }

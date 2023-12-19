@@ -1,7 +1,9 @@
 package co.com.sl.inversiones.model.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.io.Serializable;
 
@@ -17,6 +19,8 @@ public class Customer implements Serializable {
     @Column(name = "CustomerId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer customerId;
+
+
     @Column(name = "Names")
     private String names;
     @Column(name = "Surnames")
@@ -25,10 +29,8 @@ public class Customer implements Serializable {
     private Integer age;
     @Column(name = "AvailableIncome")
     private String availableIncome;
-    /*@Column(name = "InvestorTypeId")
-    private Integer investorTypeId;*/
 
     @ManyToOne
-    @JoinColumn(name = "InvestorTypeId")
+    @JoinColumn(name = "InvestorTypeId", referencedColumnName = "InvestorTypeId")
     private InvestorType investorType;
 }
