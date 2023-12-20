@@ -17,10 +17,15 @@ public class Investment implements Serializable {
     @Column(name = "InvestmentId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer investmentId;
-    @Column(name = "CustomerId")
-    private Integer customerId;
-    @Column(name = "ProjectId")
-    private Integer projectId;
+
+    @ManyToOne
+    @JoinColumn(name = "CustomerId", referencedColumnName = "CustomerId")
+    private Customer customerId;
+
+    @ManyToOne
+    @JoinColumn(name = "ProjectId", referencedColumnName = "ProjectId")
+    private Project projectId;
+
     @Column(name = "Value")
     private String value;
 }

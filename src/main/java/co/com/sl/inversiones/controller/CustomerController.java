@@ -84,7 +84,6 @@ public class CustomerController {
     @PutMapping("customer/{id}")
     public ResponseEntity<?> updateCustomer(@RequestBody CustomerDto customerDto, @PathVariable Integer id) {
         Customer customerUpdate = null;
-        System.out.println("CustomerDto : " + customerDto.toString());
 
         try {
             // Valida que el ID de la URL y el enviado coincidan
@@ -141,7 +140,6 @@ public class CustomerController {
                             .build(),
                             HttpStatus.INTERNAL_SERVER_ERROR);
                 } else {
-                    System.out.println("Existe : " + investorType.toString());
                     customerDto.setInvestorTypeObj(investorType);
                 }
             } catch (Exception ex) {

@@ -13,8 +13,8 @@ import java.io.Serializable;
 @ToString
 @Builder
 public class CustomerDto implements Serializable {
-    @Schema(description = "Juanito Perez")
     private Integer customerId;
+    @Schema(description = "Juanito Perez")
     private String names;
     private String surnames;
     private Integer age;
