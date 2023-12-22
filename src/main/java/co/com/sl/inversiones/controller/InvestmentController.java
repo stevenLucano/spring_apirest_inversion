@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @RestController
@@ -59,6 +61,19 @@ public class InvestmentController {
         Investment investmentCreated = null;
         Customer customerFind = null;
         Project projectFind = null;
+        BigDecimal investmentValue = null;
+
+        // Valida que el value sea un número
+        try {
+            investmentValue = new BigDecimal(investmentDto.getValue());
+        } catch (Exception ex) {
+            return new ResponseEntity<>(ResponseMessage.builder()
+                    .statusCode("07")
+                    .message("The value must be a number")
+                    .result(null)
+                    .build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         try {
             // Se valida si existe el cliente
@@ -87,6 +102,8 @@ public class InvestmentController {
                 investmentDto.setProjectObj(projectFind);
             }
 
+            updateCustomerIncome(customerFind, investmentValue);
+
             // Se guarda la inversion creada
             investmentCreated = investmentService.save(investmentDto);
             InvestmentDto newInvestmentDto = InvestmentDto.builder()
@@ -110,6 +127,49 @@ public class InvestmentController {
                     .result(null)
                     .build(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(ResponseMessage.builder()
+                    .statusCode("08")
+                    .message(ex.getMessage())
+                    .result(null)
+                    .build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private void updateCustomerIncome (Customer customerFind, BigDecimal investmentValue) throws Exception {
+        // Valida si el cliente tiene un tipo de inversor asignado
+        if (customerFind.getInvestorType() == null) {
+            throw new Exception("The customer [" + customerFind.getCustomerId() + "] doesn't have investor type assigned.");
+        }
+
+        BigDecimal incomeAvailable = new BigDecimal(customerFind.getAvailableIncome());
+
+        // Se calcula el máximo disponible a invertir del usuario
+        // Disponible - (1 - permitido por tipo de inversor)
+        // 20% -> Basico (1) | 25% -> Completo (2)
+        incomeAvailable = incomeAvailable
+                .subtract(new BigDecimal(customerFind.getInvestorType().getMonthlyIncome())
+                                .multiply(BigDecimal.valueOf(
+                                            customerFind.getInvestorType().getInvestorTypeId() == 1 ?
+                                            (1 - 0.2) :
+                                            (1 - 0.25)
+                                        )
+                                )
+                )
+                .setScale(1, RoundingMode.HALF_UP);
+
+        // Valida que el valor de la inversión no sea mayor que el disponible a invertir
+        // de acuerdo al tipo de inversor
+        if (incomeAvailable.compareTo(BigDecimal.ZERO) == 0) {
+            throw new Exception("The customer doesn't have enough income to invest.");
+        } else if (incomeAvailable.compareTo(investmentValue) < 0) {
+            throw new Exception("The investment value can't be greater than " + String.valueOf(incomeAvailable));
+        }
+
+        BigDecimal newCustomerIncome = new BigDecimal(customerFind.getAvailableIncome());
+        newCustomerIncome = newCustomerIncome.subtract(investmentValue);
+        customerFind.setAvailableIncome(String.valueOf(newCustomerIncome));
+
     }
 }
