@@ -102,9 +102,14 @@ public class InvestmentController {
                 investmentDto.setProjectObj(projectFind);
             }
 
+            // Se actualiza el valor del customer
             updateCustomerIncome(customerFind, investmentValue);
 
+            // Se actualiza el valor del proyecto
+            updateProjectAvailable(projectFind, investmentValue);
+
             // Se guarda la inversion creada
+            // No se actualiza el customer ni el proyecto, hasta que haya pasado las validaciones anteriores
             investmentCreated = investmentService.save(investmentDto);
             InvestmentDto newInvestmentDto = InvestmentDto.builder()
                     .investmentId(investmentCreated.getInvestmentId())
@@ -170,6 +175,29 @@ public class InvestmentController {
         BigDecimal newCustomerIncome = new BigDecimal(customerFind.getAvailableIncome());
         newCustomerIncome = newCustomerIncome.subtract(investmentValue);
         customerFind.setAvailableIncome(String.valueOf(newCustomerIncome));
+    }
 
+    private void updateProjectAvailable(Project projectFind, BigDecimal investmentValue) throws Exception {
+
+        BigDecimal newProjectAvailable = new BigDecimal(projectFind.getAvailableAmount());
+
+        // Valida que el valor de la inversión no sea mayor que el disponible a invertir
+        // en el proyecto
+        if (newProjectAvailable.compareTo(BigDecimal.ZERO) == 0) {
+            throw new Exception("The project doesn't have amount available to invest.");
+        } else if (newProjectAvailable.compareTo(investmentValue) < 0) {
+            throw new Exception("The amount available of the project is : " + String.valueOf(newProjectAvailable));
+        }
+
+        newProjectAvailable = newProjectAvailable.subtract(investmentValue);
+
+        // Cierra el proyecto si el monto disponible del proyecto es igual 0
+        // O => Open | C => Closed
+        if (newProjectAvailable.compareTo(BigDecimal.ZERO) == 0) {
+            projectFind.setStatus("C");
+        }
+
+        // Actualiza el proyecto
+        projectFind.setAvailableAmount(String.valueOf(newProjectAvailable));
     }
 }

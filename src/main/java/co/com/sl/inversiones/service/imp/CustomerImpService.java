@@ -28,9 +28,13 @@ public class CustomerImpService implements ICustomerService {
                 .names(customerDto.getNames())
                 .surnames(customerDto.getSurnames())
                 .age(customerDto.getAge())
-                .availableIncome(customerDto.getInvestorTypeObj().getMonthlyIncome())
-                .investorType(customerDto.getInvestorTypeObj())
                 .build();
+
+        // Si el investorTypeObj no es nulo, lo actualiza
+        if (customerDto.getInvestorTypeObj() != null) {
+            customer.setAvailableIncome(customerDto.getInvestorTypeObj().getMonthlyIncome());
+            customer.setInvestorType(customerDto.getInvestorTypeObj());
+        }
         return customerDao.save(customer);
     }
 
